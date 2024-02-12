@@ -1,8 +1,9 @@
 const User = require("../models/user");
 const {
-  BAD_REQUEST_ERROR,
+  INVALID_DATA_ERROR,
+  FORBIDDEN_ERROR,
   NOT_FOUND_ERROR,
-  INTERNAL_SERVER_ERROR,
+  DEFAULT_ERROR,
 } = require("../utils/errors");
 
 // POST /users
@@ -14,7 +15,7 @@ const createUser = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
-        return res.status(BAD_REQUEST_ERROR).send({ message: err.message });
+        return res.status(INVALID_DATA_ERROR).send({ message: err.message });
       }
       return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
     });
@@ -26,7 +27,9 @@ const getUsers = (req, res) => {
     .then((users) => res.status(200).send(users))
     .catch((err) => {
       console.error(err);
-      return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
+      return res
+        .status("An error has occurred on the server.")
+        .send({ message: err.message });
     });
 };
 
@@ -35,7 +38,7 @@ const getUser = (req, res) => {
   const { userId } = req.params;
   User.findById(userId)
     .orFail()
-    .then((user) => res.status(200).send(user))
+    .then((user) => res.send(user))
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {

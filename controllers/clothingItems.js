@@ -1,6 +1,6 @@
 const clothingItem = require("../models/clothingItems");
 const {
-  BAD_REQUEST_ERROR,
+  INVALID_DATA_ERROR,
   NOT_FOUND_ERROR,
   INTERNAL_SERVER_ERROR,
 } = require("../utils/errors");
@@ -19,7 +19,9 @@ const createItem = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
-        return res.status(BAD_REQUEST_ERROR).send({ message: "Invalid data." });
+        return res
+          .status(INVALID_DATA_ERROR)
+          .send({ message: "Invalid data." });
       }
       return res
         .status(INTERNAL_SERVER_ERROR)
@@ -57,7 +59,9 @@ const deleteItem = (req, res) => {
           .send({ message: "The request was sent to a non-existent address." });
       }
       if (err.name === "CastError") {
-        return res.status(BAD_REQUEST_ERROR).send({ message: "Invalid data." });
+        return res
+          .status(INVALID_DATA_ERROR)
+          .send({ message: "Invalid data." });
       }
       return res
         .status(INTERNAL_SERVER_ERROR)
@@ -82,7 +86,9 @@ const likeItem = (req, res) => {
           .send({ message: "The request was sent to a non-existent address." });
       }
       if (err.name === "CastError") {
-        return res.status(BAD_REQUEST_ERROR).send({ message: "Invalid data." });
+        return res
+          .status(INVALID_DATA_ERROR)
+          .send({ message: "Invalid data." });
       }
       return res
         .status(INTERNAL_SERVER_ERROR)
@@ -107,7 +113,9 @@ const dislikeItem = (req, res) => {
           .send({ message: "The request was sent to a non-existent address." });
       }
       if (err.name === "CastError") {
-        return res.status(BAD_REQUEST_ERROR).send({ message: "Invalid data." });
+        return res
+          .status(INVALID_DATA_ERROR)
+          .send({ message: "Invalid data." });
       }
       return res
         .status(INTERNAL_SERVER_ERROR)

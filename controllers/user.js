@@ -1,9 +1,8 @@
 const User = require("../models/user");
 const {
   INVALID_DATA_ERROR,
-  FORBIDDEN_ERROR,
   NOT_FOUND_ERROR,
-  DEFAULT_ERROR,
+  INTERNAL_SERVER_ERROR,
 } = require("../utils/errors");
 
 // POST /users
@@ -28,8 +27,8 @@ const getUsers = (req, res) => {
     .catch((err) => {
       console.error(err);
       return res
-        .status("An error has occurred on the server.")
-        .send({ message: err.message });
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server." });
     });
 };
 
@@ -45,7 +44,9 @@ const getUser = (req, res) => {
         return res.status(NOT_FOUND_ERROR).send({ message: err.message });
       }
       if (err.name === "CastError") {
-        return res.status(BAD_REQUEST_ERROR).send({ message: "Invalid data." });
+        return res
+          .status(INVALID_DATA_ERROR)
+          .send({ message: "Invalid data." });
       }
       return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
     });

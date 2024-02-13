@@ -20,7 +20,7 @@ app.use((req, res, next) => {
   next();
 });
 
-const routes = require("./routes");
+// const routes = require("./routes");
 
 app.use(express.json());
 // app.use(routes);

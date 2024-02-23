@@ -1,7 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const helmet = require("helmet");
+
 const routes = require("./routes");
 
 const { PORT = 3001 } = process.env;
@@ -18,7 +18,6 @@ mongoose.connect(
   (e) => console.log("DB error", e),
 );
 
-app.use(helmet());
 app.use(express.json());
 
 app.use(routes);

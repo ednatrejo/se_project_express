@@ -1,31 +1,28 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const mainRouter = require("./routes/index");
+const cors = require("cors");
+const helmet = require("helmet");
+const routes = require("./routes");
 
-const app = express();
 const { PORT = 3001 } = process.env;
+const app = express();
+app.use(cors());
+app.disable("x-powered-by");
 
-mongoose
-  .connect("mongodb://127.0.0.1:27017/wtwr_db")
-  .then(() => {
-    console.log("Connected to DB");
-  })
-  .catch(console.error);
+mongoose.set("strictQuery", true);
+mongoose.connect(
+  "mongodb://127.0.0.1:27017/wtwr_db",
+  (r) => {
+    console.log("connected to DB", r);
+  },
+  (e) => console.log("DB error", e),
+);
 
-// Code implementation for the next sprint.
-app.use((req, res, next) => {
-  req.user = {
-    _id: "5d8b8592978f8bd833ca8133",
-  };
-  next();
-});
-
-// const routes = require("./routes");
-
+app.use(helmet());
 app.use(express.json());
-// app.use(routes);
-app.use("/", mainRouter);
+
+app.use(routes);
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`App listening at port ${PORT}`);
 });

@@ -1,125 +1,130 @@
-const clothingItem = require("../models/clothingItems");
+const ClothingItem = require("../models/clothingItem");
 const {
+  REQUEST_SUCCESSFUL,
+  FORBIDDEN_ERROR,
   INVALID_DATA_ERROR,
   NOT_FOUND_ERROR,
-  INTERNAL_SERVER_ERROR,
+  DEFAULT_ERROR,
 } = require("../utils/errors");
 
-// POST /item
 const createItem = (req, res) => {
+  console.log(req.user._id);
   const { name, weather, imageUrl } = req.body;
-  const owner = req.user._id;
 
-  clothingItem
-    .create({ name, weather, imageUrl, owner })
+  ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => {
       console.log(item);
       res.send({ data: item });
     })
     .catch((err) => {
       console.error(err);
-      if (err.name === "ValidationError") {
+      if (err.name === `ValidationError`) {
         return res
           .status(INVALID_DATA_ERROR)
-          .send({ message: "Invalid data." });
+          .send({ message: "Invalid Credentials" });
       }
       return res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server." });
+        .status(DEFAULT_ERROR)
+        .send({ message: "Internal Server Error" });
     });
 };
 
-// GET /items
 const getItems = (req, res) => {
-  clothingItem
-    .find({})
-    .then((items) => res.status(200).send(items))
-    .catch((err) => {
-      console.error(err);
-      res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server." });
+  ClothingItem.find({})
+    .then((items) => res.send(items))
+    .catch((e) => {
+      console.error(e);
+      res.status(DEFAULT_ERROR).send({ message: "Internal Server Error" });
     });
 };
 
-// DELETE /item
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
-
   console.log(itemId);
-  clothingItem
-    .findByIdAndDelete(itemId)
-    .orFail()
-    .then((item) => res.status(200).send(item))
+  const { _id: userId } = req.user;
+
+  ClothingItem.findOne({ _id: itemId })
+    .then((item) => {
+      if (!item) {
+        return Promise.reject(new Error("ID cannot be found"));
+      }
+      if (!item?.owner?.equals(userId)) {
+        return Promise.reject(new Error("You are not the owner of this item"));
+      }
+      return ClothingItem.deleteOne({ _id: itemId, owner: userId }).then(() => {
+        res.send({ message: `Item ${itemId} Deleted` });
+      });
+    })
     .catch((err) => {
       console.error(err);
-      if (err.name === "DocumentNotFoundError") {
-        return res
+      if (err.message === "ID cannot be found") {
+        res
           .status(NOT_FOUND_ERROR)
-          .send({ message: "The request was sent to a non-existent address." });
+          .send({ message: `${err.name} Error On Deleting Item` });
+      } else if (err.message === "You are not the owner of this item") {
+        res.status(FORBIDDEN_ERROR).send({ message: err.message });
+      } else if (err.name === `CastError`) {
+        res.status(INVALID_DATA_ERROR).send({ message: err.message });
+      } else {
+        res.status(DEFAULT_ERROR).send({ message: "Internal Server Error" });
       }
-      if (err.name === "CastError") {
-        return res
-          .status(INVALID_DATA_ERROR)
-          .send({ message: "Invalid data." });
-      }
-      return res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server." });
     });
 };
 
-// PUT /:itemId/likes
+// Likes/Unlikes
 const likeItem = (req, res) => {
+  console.log(req.user._id);
   const userId = req.user._id;
   const { itemId } = req.params;
 
-  clothingItem
-    .findByIdAndUpdate(itemId, { $addToSet: { likes: userId } }, { new: true })
+  ClothingItem.findByIdAndUpdate(
+    itemId,
+    { $addToSet: { likes: userId } },
+    { new: true },
+  )
     .orFail()
-    .then((item) => res.status(200).send({ data: item }))
+    .then((item) => res.status(REQUEST_SUCCESSFUL).send({ data: item }))
     .catch((err) => {
       console.error(err);
-      if (err.name === "DocumentNotFoundError") {
-        return res
+      if (err.name === `DocumentNotFoundError`) {
+        res
           .status(NOT_FOUND_ERROR)
-          .send({ message: "The request was sent to a non-existent address." });
-      }
-      if (err.name === "CastError") {
-        return res
+          .send({ message: `${err.name} Error On likeItem` });
+      } else if (err.name === `CastError`) {
+        res
           .status(INVALID_DATA_ERROR)
-          .send({ message: "Invalid data." });
+          .send({ message: "Invalid Credentials, Unable To Add Like" });
+      } else {
+        res.status(DEFAULT_ERROR).send({ message: "Internal Server Error" });
       }
-      return res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server." });
     });
 };
 
-// DELETE /:itemId/likes
 const dislikeItem = (req, res) => {
+  console.log(req.user._id);
   const userId = req.user._id;
   const { itemId } = req.params;
 
-  clothingItem
-    .findByIdAndUpdate(itemId, { $pull: { likes: userId } }, { new: true })
+  ClothingItem.findByIdAndUpdate(
+    itemId,
+    { $pull: { likes: userId } },
+    { new: true },
+  )
     .orFail()
-    .then((item) => res.status(200).send({ data: item }))
+    .then((item) => res.send({ data: item }))
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
-        return res
+        res
           .status(NOT_FOUND_ERROR)
-          .send({ message: "The request was sent to a non-existent address." });
-      }
-      if (err.name === "CastError") {
-        return res
+          .send({ message: `${err.name} Error On dislikeItem` });
+      } else if (err.name === `CastError`) {
+        res
           .status(INVALID_DATA_ERROR)
-          .send({ message: "Invalid data." });
+          .send({ message: "Invalid Credentials, Unable To Remove Like" });
+      } else {
+        res.status(DEFAULT_ERROR).send({ message: "Internal Server Error" });
       }
-      return res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server." });
     });
 };
 

@@ -2,7 +2,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../utils/config");
 // const { reset } = require("nodemon");
-const User = require("../models/user");
+const User = require("../models/users");
 const {
   INVALID_DATA_ERROR,
   NOT_FOUND_ERROR,

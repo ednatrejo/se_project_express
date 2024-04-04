@@ -32,9 +32,12 @@ const createItem = (req, res) => {
 const getItems = (req, res) => {
   ClothingItem.find({})
     .then((items) => res.send(items))
-    .catch((e) => {
-      console.error(e);
-      res.status(DEFAULT_ERROR).send({ message: "Internal Server Error" });
+    .catch((err) => {
+      console.error(err);
+      if (err.name === `ValidationError`) {
+        next(new InvalidError("Invalid Credentials"));
+      }
+      next(err);
     });
 };
 

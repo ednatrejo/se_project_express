@@ -37,19 +37,13 @@ const createUser = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.name === `ValidationError`) {
-        res
-          .status(INVALID_DATA_ERROR)
-          .send({ message: "Invalid Request Error on createUser" });
+        next(new InvalidError("Invalid Request Error on createUser"));
       } else if (err.message === "Enter a valid email") {
-        res
-          .status(INVALID_DATA_ERROR)
-          .send({ message: "Invalid Error on createUser" });
+        next(new InvalidError("Invalid Error on createUser"));
       } else if (err.message === "Email is already in use") {
-        res
-          .status(CONFLICT_ERROR)
-          .send({ message: "Email already exists in database" });
+        next(new ConflictError(`Email ${email} already registered`));
       } else {
-        res.status(DEFAULT_ERROR).send({ message: err.message });
+        next(err);
       }
     });
 };

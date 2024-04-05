@@ -21,5 +21,5 @@ MongoDB database
 Mongoose ODM
 Postman
 Links
-The project can be seen live using the this []
+The project can be seen live using the this [www.edna.twilightparadox.com]
 The project's backend can be found by using this [https://github.com/ednatrejo/se_project_react.git]

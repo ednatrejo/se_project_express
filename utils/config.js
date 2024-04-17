@@ -1,5 +1,6 @@
-require("dotenv").config();
+const { JWT_SECRET = "dev-secret", NODE_ENV } = process.env;
 
-const JWT_SECRET = process.env.JWT_SECRET || "prod-secret";
-
-module.exports = { JWT_SECRET };
+module.exports = {
+  JWT_SECRET,
+  NODE_ENV,
+};

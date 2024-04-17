@@ -1,11 +1,11 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../utils/config");
-const User = require("../models/user");
-const InvalidError = require("../errors/InvalidError");
-const NotFoundError = require("../errors/NotFound");
-const ConflictError = require("../errors/ConflictError");
-const UnauthorizedError = require("../errors/UnauthorizedError");
+const User = require("../models/users");
+const InvalidError = require("../errors/invalidError");
+const NotFoundError = require("../errors/notFoundError");
+const ConflictError = require("../errors/conflictError");
+const UnauthorizedError = require("../errors/unauthorizedError");
 
 const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
@@ -53,12 +53,12 @@ const loginUser = (req, res, next) => {
     return next(new InvalidError("Invalid Credentials"));
   }
 
-  User.findUserByCredentials(email, password)
+  return User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
-      res.send({ token });
+      return res.send({ token });
     })
     .catch((err) => {
       console.error(err);
